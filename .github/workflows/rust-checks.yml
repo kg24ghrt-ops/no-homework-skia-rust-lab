@@ -30,9 +30,12 @@ jobs:
 
       - name: Rust formatting check
         run: cargo fmt -- --check
+        working-directory: native
 
       - name: Rust Clippy check
         run: cargo clippy -- -D warnings
+        working-directory: native
 
       - name: Run unit tests
-        run: cargo test --native
+        run: cargo test
+        working-directory: native
