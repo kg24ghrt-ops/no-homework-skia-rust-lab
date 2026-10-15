@@ -1,6 +1,6 @@
-use jni::JNIEnv;
 use jni::objects::{JClass, JString};
 use jni::sys::jstring;
+use jni::JNIEnv;
 
 #[no_mangle]
 pub extern "system" fn Java_org_example_nohomework_NativeLib_greeting(
