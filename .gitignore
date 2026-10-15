@@ -1,0 +1,18 @@
+# Android
+/build/
+/app/
+/.gradle
+
+# Rust
+/target
+
+# Skia
+# Out/
+
+# Docs
+# We'll keep docs in the repo
+
+# OS
+.DS_Store
+Thumbs.db
+

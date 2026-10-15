@@ -1,0 +1,11 @@
+[package]
+name = "no_homework_native"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+skia-safe = { version = "0.41.0", features = ["default"] }
+jni = "0.21.0"
+
+[lib]
+crate-type = ["cdylib"]
