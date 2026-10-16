@@ -19,24 +19,24 @@ jobs:
           cache: 'gradle'
 
       - name: Set up Android SDK and NDK
-        uses: android-actions/setup-android@v2
+        uses: android-actions/setup-android@v3
         with:
           api-level: 34
           ndk-version: 26.1.10909125
 
-      - name: Install Rust toolchain for Android
+      - name: Install Rust toolchain for Android targets
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: armv7-linux-androideabi, aarch64-linux-android, i686-linux-android, x86_64-linux-android
 
-      - name: Cache Cargo registry
+      - name: Cache Cargo registry and target
         uses: actions/cache@v4
         with:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
             native/target
-          key: ${{ runner.os }}-cargo-android-${{ hashFiles('native/Cargo.toml') }}
+          key: ${{ runner.os }}-cargo-android-${{ hashFiles('native/Cargo.toml', 'native/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-android-
 
@@ -45,6 +45,7 @@ jobs:
           ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_ROOT }}
           ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
         run: |
+          set -euo pipefail
           NDK_TOOLCHAIN="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin"
           for target in armv7-linux-androideabi aarch64-linux-android i686-linux-android x86_64-linux-android; do
             case $target in
@@ -52,6 +53,7 @@ jobs:
               aarch64-linux-android)     abi=arm64-v8a;     clang=aarch64-linux-android21-clang ;;
               i686-linux-android)        abi=x86;           clang=i686-linux-android21-clang ;;
               x86_64-linux-android)      abi=x86_64;        clang=x86_64-linux-android21-clang ;;
+              *) echo "unknown target $target" >&2; exit 1 ;;
             esac
             utarget=$(echo "$target" | tr 'a-z-' 'A-Z_')
             mkdir -p "native/target/$target/release"
@@ -62,23 +64,27 @@ jobs:
             cargo build --release --target "$target"
             mkdir -p "app/src/main/jniLibs/$abi"
             cp "native/target/$target/release/libno_homework_native.so" "app/src/main/jniLibs/$abi/"
+            echo "built $abi ($target)"
           done
 
-      - name: Verify native libraries packaged
+      - name: Verify native libraries packaged per ABI
         run: |
-          find app/src/main/jniLibs -name '*.so' -printf '%p\n'
+          find app/src/main/jniLibs -type d -name 'armeabi-v7a' -o -type d -name 'arm64-v8a' -o -type d -name 'x86' -o -type d -name 'x86_64' | sort
+          find app/src/main/jniLibs -name '*.so' -printf '%p\n' | sort
 
-      - name: Build Android app
+      - name: Build Android APK
         run: ./gradlew :app:assembleDebug
 
-      - name: Upload APK
+      - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
           name: app-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
 
       - name: Upload native libraries
         uses: actions/upload-artifact@v4
         with:
           name: native-libraries
           path: app/src/main/jniLibs/**/*.so
+          retention-days: 30

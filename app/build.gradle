@@ -30,15 +30,9 @@ android {
         }
     }
 
-    // Package the native library from the native/target directory
-    sourceSets {
-        main {
-            // The native libraries will be placed in jniLibs/<abi> by the Gradle task we'll define later.
-            // For now, we'll just set the jniLibs.srcDirs to include the native/target directory.
-            // We'll adjust this in the native build script.
-            jniLibs.srcDirs('native/target')
-        }
-    }
+    // Native libraries are built by Cargo and copied into
+    // app/src/main/jniLibs/<abi>/ by the CI build step. Gradle picks up
+    // jniLibs from src/main/jniLibs by default, so no custom srcDirs is needed.
 }
 
 dependencies {
