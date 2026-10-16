@@ -1,9 +1,11 @@
-use jni::objects::{JClass, JString};
+use jni::objects::{JByteArray, JClass};
 use jni::sys::jstring;
 use jni::JNIEnv;
 
+pub mod image;
+
 #[no_mangle]
-pub extern "system" fn Java_org_example_nohomework_NativeLib_greeting(
+pub extern "system" fn Java_org_example_nohomework_MainActivity_greeting(
     mut env: JNIEnv,
     _: JClass,
 ) -> jstring {
@@ -13,27 +15,56 @@ pub extern "system" fn Java_org_example_nohomework_NativeLib_greeting(
     output.into_inner()
 }
 
-// We'll add an image processing function later
 #[no_mangle]
-pub extern "system" fn Java_org_example_nohomework_NativeLib_invert_colors(
-    env: JNIEnv,
+pub extern "system" fn Java_org_example_nohomework_MainActivity_invertColors(
+    mut env: JNIEnv,
     _: JClass,
     width: i32,
     height: i32,
-    input_bytes: jni::objects::JByteArray,
-) -> jni::objects::JByteArray {
-    // For now, just return the input as is
-    input_bytes
+    input_bytes: JByteArray,
+) -> JByteArray {
+    let len = match env.get_array_length(input_bytes) {
+        Ok(l) => l as usize,
+        Err(_) => return JByteArray::null(),
+    };
+
+    let bytes: Vec<u8> = match env.get_byte_array_region(input_bytes, 0, len as i32) {
+        Ok(b) => b.into_iter().map(|x| x as u8).collect(),
+        Err(_) => return JByteArray::null(),
+    };
+
+    match image::invert_colors(&mut bytes, width, height) {
+        Ok(()) => match env.byte_array_from_slice(&bytes) {
+            Ok(a) => a,
+            Err(_) => JByteArray::null(),
+        },
+        Err(e) => {
+            let _ = env.throw_new("java/lang/IllegalArgumentException", e.to_string());
+            JByteArray::null()
+        }
+    }
 }
 
-// Add unit tests
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::image::*;
 
     #[test]
-    fn test_greeting() {
-        // We can't easily test the JNI function without a JVM, but we can test the logic.
-        assert_eq!(true, true);
+    fn lib_delegates_to_image_invert_colors() {
+        let mut buffer = vec![10, 20, 30, 200];
+        assert!(invert_colors(&mut buffer, 1, 1).is_ok());
+        assert_eq!(buffer, [245, 235, 225, 200]);
+    }
+
+    #[test]
+    fn lib_validates_dimensions_before_processing() {
+        assert_eq!(
+            invert_colors(&mut [], -1, 5),
+            Err(ImageError::NegativeDimension)
+        );
+        assert_eq!(
+            invert_colors(&mut [], 0, 5),
+            Err(ImageError::ZeroDimension)
+        );
     }
 }

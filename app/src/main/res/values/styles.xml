@@ -1,0 +1,4 @@
+<resources>
+    <style name="Theme.NoHomework" parent="Theme.AppCompat.Light.NoActionBar">
+    </style>
+</resources>

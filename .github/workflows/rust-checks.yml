@@ -1,4 +1,4 @@
-name: Rust Checks
+name: Rust Checks (Fast)
 
 on:
   push:
@@ -15,7 +15,6 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: aarch64-linux-android, x86_64-linux-android
           components: rustfmt, clippy
 
       - name: Verify Rust installation
@@ -33,9 +32,9 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             native/target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('native/Cargo.toml') }}
+          key: ${{ runner.os }}-cargo-fast-${{ hashFiles('native/Cargo.toml') }}
           restore-keys: |
-            ${{ runner.os }}-cargo-
+            ${{ runner.os }}-cargo-fast-
 
       - name: Rust formatting check
         run: cargo fmt -- --check
@@ -45,6 +44,6 @@ jobs:
         run: cargo clippy -- -D warnings
         working-directory: native
 
-      - name: Run unit tests
+      - name: Run pure-Rust unit tests (no Skia dependency)
         run: cargo test
         working-directory: native

@@ -1,6 +1,6 @@
-# Android
+# Android build outputs
+/app/build/
 /build/
-/app/
 /.gradle
 
 # Rust

@@ -1,0 +1,39 @@
+name: Rust Skia Integration
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  skia-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+
+      - name: Verify Rust installation
+        run: |
+          rustc --version
+          cargo --version
+
+      - name: Cache Cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            native/target
+          key: ${{ runner.os }}-cargo-skia-${{ hashFiles('native/Cargo.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-skia-
+
+      - name: Run Skia integration tests (host)
+        run: cargo test --features skia
+        working-directory: native
