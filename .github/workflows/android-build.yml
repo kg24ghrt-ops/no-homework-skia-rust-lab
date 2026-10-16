@@ -42,12 +42,9 @@ jobs:
             ${{ runner.os }}-cargo-android-
 
       - name: Build native libraries for all ABIs
-        env:
-          ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_ROOT }}
-          ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
         run: |
           set -euo pipefail
-          NDK_TOOLCHAIN="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin"
+          NDK_TOOLCHAIN="$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin"
           for target in armv7-linux-androideabi aarch64-linux-android i686-linux-android x86_64-linux-android; do
             case $target in
               armv7-linux-androideabi)   abi=armeabi-v7a;   clang=armv7a-linux-androideabi21-clang ;;
