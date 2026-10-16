@@ -23,7 +23,7 @@ class MainActivity : AppCompatActivity() {
         layout.setPadding(24, 24, 24, 24)
 
         val greetingText = TextView(this)
-        greetingText.text = "Greeting: $greeting()"
+        greetingText.text = "Greeting: ${this.greeting()}"
         greetingText.textSize = 18f
 
         val resultText = TextView(this)
@@ -36,10 +36,10 @@ class MainActivity : AppCompatActivity() {
         testButton.setOnClickListener {
             // 2x2 RGBA8 pixels: [R,G,B,A] x 4
             val input = byteArrayOf(
-                10, 20, 30, 200,  // pixel 0
-                40, 50, 60, 100,  // pixel 1
-                70, 80, 90, 50,   // pixel 2
-                10, 20, 30, 255   // pixel 3
+                10.toByte(), 20.toByte(), 30.toByte(), 200.toByte(),  // pixel 0
+                40.toByte(), 50.toByte(), 60.toByte(), 100.toByte(),  // pixel 1
+                70.toByte(), 80.toByte(), 90.toByte(), 50.toByte(),   // pixel 2
+                10.toByte(), 20.toByte(), 30.toByte(), 255.toByte()   // pixel 3
             )
             val output = invertColors(2, 2, input)
             val hex = output.joinToString("") { "%02x".format(it) }
