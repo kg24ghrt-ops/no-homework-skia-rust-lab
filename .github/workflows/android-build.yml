@@ -61,7 +61,7 @@ jobs:
             export "CXX_$utarget=$NDK_TOOLCHAIN/${clang%clang}clang++"
             export "AR_$utarget=$NDK_TOOLCHAIN/llvm-ar"
             export "CARGO_TARGET_${utarget}_LINKER=$NDK_TOOLCHAIN/$clang"
-            cargo build --release --target "$target"
+            cargo build --release --target "$target" --manifest-path native/Cargo.toml
             mkdir -p "app/src/main/jniLibs/$abi"
             cp "native/target/$target/release/libno_homework_native.so" "app/src/main/jniLibs/$abi/"
             echo "built $abi ($target)"
