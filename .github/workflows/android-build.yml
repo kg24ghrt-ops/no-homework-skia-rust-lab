@@ -19,7 +19,7 @@ jobs:
           cache: 'gradle'
 
       - name: Set up Android SDK and NDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
         with:
           api-level: 34
           ndk-version: 26.1.10909125
