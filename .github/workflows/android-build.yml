@@ -18,11 +18,12 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
-      - name: Set up Android SDK and NDK
+      - name: Setup Android SDK
         uses: android-actions/setup-android@v4
         with:
           api-level: 34
           ndk-version: 26.1.10909125
+          packages: 'platform-tools'
 
       - name: Install Rust toolchain for Android targets
         uses: dtolnay/rust-toolchain@stable
