@@ -20,7 +20,10 @@ impl core::fmt::Display for ImageError {
             ImageError::ZeroDimension => write!(f, "image dimension is zero"),
             ImageError::NegativeDimension => write!(f, "image dimension is negative"),
             ImageError::BufferTooSmall { needed, provided } => {
-                write!(f, "buffer too small: needed {needed} bytes, provided {provided}")
+                write!(
+                    f,
+                    "buffer too small: needed {needed} bytes, provided {provided}"
+                )
             }
             ImageError::Overflow => write!(f, "integer overflow in size calculation"),
             ImageError::InvalidPixelFormat => write!(f, "invalid pixel format"),
@@ -54,7 +57,10 @@ fn validate(width: i32, height: i32, buffer_len: usize) -> Result<(usize, usize)
     }
     let needed = required_buffer_len(width, height).ok_or(ImageError::Overflow)?;
     if buffer_len < needed {
-        return Err(ImageError::BufferTooSmall { needed, provided: buffer_len });
+        return Err(ImageError::BufferTooSmall {
+            needed,
+            provided: buffer_len,
+        });
     }
     Ok((width as usize, height as usize))
 }
@@ -69,10 +75,10 @@ pub fn invert_colors(buffer: &mut [u8], width: i32, height: i32) -> Result<(), I
         let row_start = row * stride;
         for col in 0..width {
             let base = row_start + col * BYTES_PER_PIXEL;
-            buffer[base] = 255u8.wrapping_sub(buffer[base]);     // R
+            buffer[base] = 255u8.wrapping_sub(buffer[base]); // R
             buffer[base + 1] = 255u8.wrapping_sub(buffer[base + 1]); // G
             buffer[base + 2] = 255u8.wrapping_sub(buffer[base + 2]); // B
-            // alpha (base + 3) is preserved
+                                                                     // alpha (base + 3) is preserved
         }
     }
     Ok(())

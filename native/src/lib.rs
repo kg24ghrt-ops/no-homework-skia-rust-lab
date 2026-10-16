@@ -1,4 +1,4 @@
-use jni::objects::{JByteArray, JClass};
+use jni::objects::{JByteArray, JClass, JObject};
 use jni::sys::jstring;
 use jni::JNIEnv;
 
@@ -6,43 +6,50 @@ pub mod image;
 
 #[no_mangle]
 pub extern "system" fn Java_org_example_nohomework_MainActivity_greeting(
-    mut env: JNIEnv,
+    env: JNIEnv,
     _: JClass,
 ) -> jstring {
     let output = env
         .new_string("Hello from Rust!")
         .expect("Could not create Java string");
-    output.into_inner()
+    output.into_raw()
 }
 
 #[no_mangle]
-pub extern "system" fn Java_org_example_nohomework_MainActivity_invertColors(
-    mut env: JNIEnv,
-    _: JClass,
+pub extern "system" fn Java_org_example_nohomework_MainActivity_invertColors<'a>(
+    mut env: JNIEnv<'a>,
+    _: JClass<'a>,
     width: i32,
     height: i32,
-    input_bytes: JByteArray,
-) -> JByteArray {
-    let len = match env.get_array_length(input_bytes) {
+    input_bytes: JByteArray<'a>,
+) -> JByteArray<'a> {
+    let len = match env.get_array_length(&input_bytes) {
         Ok(l) => l as usize,
-        Err(_) => return JByteArray::null(),
+        Err(_) => return null_byte_array(),
     };
 
-    let bytes: Vec<u8> = match env.get_byte_array_region(input_bytes, 0, len as i32) {
-        Ok(b) => b.into_iter().map(|x| x as u8).collect(),
-        Err(_) => return JByteArray::null(),
-    };
+    let mut buf: Vec<jni::sys::jbyte> = vec![0; len];
+    match env.get_byte_array_region(&input_bytes, 0, &mut buf) {
+        Ok(()) => {}
+        Err(_) => return null_byte_array(),
+    }
+
+    let mut bytes: Vec<u8> = buf.into_iter().map(|x| x as u8).collect();
 
     match image::invert_colors(&mut bytes, width, height) {
         Ok(()) => match env.byte_array_from_slice(&bytes) {
             Ok(a) => a,
-            Err(_) => JByteArray::null(),
+            Err(_) => null_byte_array(),
         },
         Err(e) => {
             let _ = env.throw_new("java/lang/IllegalArgumentException", e.to_string());
-            JByteArray::null()
+            null_byte_array()
         }
     }
+}
+
+fn null_byte_array() -> JByteArray<'static> {
+    unsafe { JByteArray::from_raw(JObject::null().as_raw()) }
 }
 
 #[cfg(test)]
@@ -62,9 +69,6 @@ mod tests {
             invert_colors(&mut [], -1, 5),
             Err(ImageError::NegativeDimension)
         );
-        assert_eq!(
-            invert_colors(&mut [], 0, 5),
-            Err(ImageError::ZeroDimension)
-        );
+        assert_eq!(invert_colors(&mut [], 0, 5), Err(ImageError::ZeroDimension));
     }
 }

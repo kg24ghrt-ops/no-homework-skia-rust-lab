@@ -4,7 +4,7 @@
 /.gradle
 
 # Rust
-/target
+**/target
 
 # Skia
 # Out/
