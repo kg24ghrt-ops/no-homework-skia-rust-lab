@@ -4,6 +4,9 @@ use jni::JNIEnv;
 
 pub mod image;
 
+#[cfg(feature = "skia")]
+pub mod skia;
+
 #[no_mangle]
 pub extern "system" fn Java_org_example_nohomework_MainActivity_greeting(
     env: JNIEnv,
@@ -38,6 +41,28 @@ pub extern "system" fn Java_org_example_nohomework_MainActivity_invertColors<'a>
 
     match image::invert_colors(&mut bytes, width, height) {
         Ok(()) => match env.byte_array_from_slice(&bytes) {
+            Ok(a) => a,
+            Err(_) => null_byte_array(),
+        },
+        Err(e) => {
+            let _ = env.throw_new("java/lang/IllegalArgumentException", e.to_string());
+            null_byte_array()
+        }
+    }
+}
+
+#[cfg(feature = "skia")]
+#[no_mangle]
+pub extern "system" fn Java_org_example_nohomework_MainActivity_generateNotebookPaper<'a>(
+    mut env: JNIEnv<'a>,
+    _: JClass<'a>,
+    width: i32,
+    height: i32,
+    line_spacing: f32,
+    margin_width: f32,
+) -> JByteArray<'a> {
+    match skia::generate_notebook_paper_png(width, height, line_spacing, margin_width) {
+        Ok(png) => match env.byte_array_from_slice(&png) {
             Ok(a) => a,
             Err(_) => null_byte_array(),
         },
