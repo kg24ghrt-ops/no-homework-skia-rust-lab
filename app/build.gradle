@@ -6,12 +6,13 @@ plugins {
 android {
     compileSdk 34
 
-    defaultConfig {
-        applicationId "org.example.nohomework"
-        minSdk 21
-        targetSdk 34
-        versionCode 1
-        versionName "1.0"
+        defaultConfig {
+            applicationId "org.example.nohomework"
+            namespace "org.example.nohomework"
+            minSdk 21
+            targetSdk 34
+            versionCode 1
+            versionName "1.0"
 
         // Configure for external native build
         externalNativeBuild {
