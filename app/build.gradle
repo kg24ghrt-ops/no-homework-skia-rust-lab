@@ -31,6 +31,15 @@ android {
         }
     }
 
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
     // Native libraries are built by Cargo and copied into
     // app/src/main/jniLibs/<abi>/ by the CI build step. Gradle picks up
     // jniLibs from src/main/jniLibs by default, so no custom srcDirs is needed.
